@@ -2,6 +2,8 @@
 
 using namespace std;
 
+typedef void (*SortFunc)(int *, int, bool CompFunc(int, int));
+
 int *DynamicAllocating(int n)
 {
     int *a = new int[n];
@@ -35,60 +37,58 @@ void Swap(int &a, int &b)
     b = temp;
 }
 
-bool ascending(int a, int b)
+bool ascending(int left, int right)
 {
-    return a > b;
+    return left > right;
 }
 
-bool descending(int a, int b)
+bool descending(int left, int right)
 {
-    return a < b;
+    return right > left;
 }
-
-//SelectionSort
+// SelectionSort
 
 void SelectionSort(int *a, int n, bool CompFunc(int, int))
 {
     for (int i = 0; i < n - 1; i++)
     {
-        int min = i;
+        int key = i;
         for (int j = i + 1; j < n; j++)
         {
-            if (CompFunc(a[j], a[min]))
+            if (CompFunc(a[key], a[j]))
             {
-                min = j;
+                key = j;
             }
         }
-        if (min != i)
+        if (key != i)
         {
-            Swap(a[i], a[min]);
+            Swap(a[key], a[i]);
         }
     }
 }
 
-//BubbleSort
+// BubbleSort
 
 void BubbleSort(int *a, int n, bool CompFunc(int, int))
 {
-    for (int i = 0; i < n - 1; i++)
+    bool swapped;
+    int swapCounter = 0;
+    do
     {
         bool swapped = false;
-        for (int j = 0; j < n - i - 1; j++)
+        for (int i = 1; i < n; i++)
         {
-            if (CompFunc(a[j], a[j + 1]))
+            if (CompFunc(a[i - 1], a[i]))
             {
-                Swap(a[j], a[j + 1]);
+                Swap(a[i - 1], a[i]);
                 swapped = true;
             }
+            ++swapCounter;
         }
-        if (!swapped)
-        {
-            break;
-        }
-    }
+    } while (swapped);
 }
 
-//InsertionSort
+// InsertionSort
 
 void InsertionSort(int *a, int n, bool CompFunc(int, int))
 {
@@ -105,26 +105,30 @@ void InsertionSort(int *a, int n, bool CompFunc(int, int))
     }
 }
 
-//QuickSort
+// QuickSort
 
 int Partition(int *a, int low, int high, bool CompFunc(int, int))
 {
-    int pivot = a[high];
-    int i = low - 1;
-    for (int j = low; j < high; j++)
+    int pivot = a[low];
+    int storeIndex = low + 1;
+    for (int i = low + 1; i <= high; i++)
     {
-        if (CompFunc(a[j], pivot))
+        if (CompFunc(a[i], pivot) || a[i] == pivot && rand() % 2 == 0)
         {
-            i++;
-            Swap(a[i], a[j]);
+            Swap(a[i], a[storeIndex]);
+            ++storeIndex;
         }
     }
-    Swap(a[i + 1], a[high]);
-    return i + 1;
+    Swap(a[low], a[storeIndex - 1]);
+    return storeIndex - 1;
 }
 
 void QuickSort(int *a, int low, int high, bool CompFunc(int, int))
 {
+    if (low == 0 && high > 0)
+    {
+        srand(time(0));
+    }
     if (low < high)
     {
         int pi = Partition(a, low, high, CompFunc);
@@ -133,7 +137,7 @@ void QuickSort(int *a, int low, int high, bool CompFunc(int, int))
     }
 }
 
-//MergeSort
+// MergeSort
 
 void Merge(int *a, int l, int m, int r, bool CompFunc(int, int))
 {
@@ -192,7 +196,7 @@ void MergeSort(int *a, int l, int r, bool CompFunc(int, int))
     Merge(a, l, m, r, CompFunc);
 }
 
-//HeapSort
+// HeapSort
 
 void Heapify(int *a, int n, int i, bool CompFunc(int, int))
 {
@@ -216,6 +220,7 @@ void Heapify(int *a, int n, int i, bool CompFunc(int, int))
 
 void HeapSort(int *a, int n, bool CompFunc(int, int))
 {
+    // build heap
     for (int i = n / 2 - 1; i >= 0; i--)
     {
         Heapify(a, n, i, CompFunc);
@@ -226,7 +231,8 @@ void HeapSort(int *a, int n, bool CompFunc(int, int))
         Heapify(a, i, 0, CompFunc);
     }
 }
-//ShellSort
+
+// ShellSort
 
 void ShellSort(int *a, int n, bool CompFunc(int, int))
 {
@@ -245,120 +251,107 @@ void ShellSort(int *a, int n, bool CompFunc(int, int))
     }
 }
 
-//sequentialSearch
+// RadixSort
 
-int SequentialSearch(int *a, int n, int key)
+int getMax(int *a, int n)
 {
+    int max = a[0];
+    for (int i = 1; i < n; i++)
+    {
+        if (a[i] > max)
+        {
+            max = a[i];
+        }
+    }
+    return max;
+}
+void countSort(int *a, int n, int exp, bool CompFunc(int, int))
+{
+    int *output = new int[n];
+    int count[10] = {0};
     for (int i = 0; i < n; i++)
     {
-        if (a[i] == key)
+        count[(a[i] / exp) % 10]++;
+    }
+    if (CompFunc == ascending)
+    {
+        for (int i = 1; i < 10; i++)
         {
-            return i;
+            count[i] += count[i - 1];
         }
     }
-    return -1;
+    else
+    {
+        for (int i = 8; i >= 0; i--)
+        {
+            count[i] += count[i + 1];
+        }
+    }
+    for (int i = n - 1; i >= 0; i--)
+    {
+        output[count[(a[i] / exp) % 10] - 1] = a[i];
+        count[(a[i] / exp) % 10]--;
+    }
+    for (int i = 0; i < n; i++)
+    {
+        a[i] = output[i];
+    }
+    delete[] output;
 }
-
-//BinarySearch - iterative
-
-int BinarySearch(int *a, int l, int r, int key, bool CompFunc(int, int))
+void RadixSort(int *a, int n, bool CompFunc(int, int))
 {
-    while (l <= r)
+    int m = getMax(a, n);
+    for (int exp = 1; m / exp > 0; exp *= 10)
     {
-        int m = l + (r - l) / 2;
-        if (a[m] == key)
-        {
-            return m;
-        }
-        if (CompFunc(a[m], key))
-        {
-            l = m + 1;
-        }
-        else
-        {
-            r = m - 1;
-        }
+        countSort(a, n, exp, CompFunc);
     }
-    return -1;
 }
 
+// Linear Search
+bool LinearSearch(int *a, int n, int key, int &Idx, int &count, int &, int OrderChoice) // sorted array
+{
+    // check within range validation
+    if (key >= a[0] && key <= a[n - 1])
+    {
+        for (int i = 0; i < n; i++)
+        {
+            if (key == a[i])
+            {
+                Idx = i;
+                count = 1;
+                int j = i + 1;
+                while (j < n && key == a[j])
+                {
+                    count++;
+                    j++;
+                }
+                return true;
+            }
+            else if (OrderChoice == 1 && key < a[i])
+            {   
+                cout <<"Not found!\n";
+                return false;
+            }
+            else if (OrderChoice == 2 && key > a[i])
+            {   
+                cout <<"Not found!\n";
+                return false;
+            }
+        }
+    }
+    cout <<"Not found!\n";
+    return false;
+}
 
+// Binary Search
+bool BinarySearch(int *a, int n, int key, int &Idx, int &count1, int &count2, int OrderChoice)
+{
+    
+
+}
 int main()
-{   
+{
     int n;
-    cout << "Enter the number of elements: ";
+    cout << "Nhap kich co mang: ";
     cin >> n;
-    int *a = DynamicAllocating(n);
-    cout << "Enter the elements: ";
-    InputArr(a, n);
-    cout << "The elements are: ";
-    PrintArr(a, n);
-    cout << endl;
-    int key;
-    cout << "Enter the key: ";
-    cin >> key;
-    cout << "Choose the sorting method: " << endl;
-    cout << "1. Selection Sort" << endl;
-    cout << "2. Bubble Sort" << endl;
-    cout << "3. Insertion Sort" << endl;
-    cout << "4. Quick Sort" << endl;
-    cout << "5. Merge Sort" << endl;
-    cout << "6. Heap Sort" << endl;
-    cout << "7. Shell Sort" << endl;
-    int choice;
-    cin >> choice;
-    cout << "Choose the sorting order: " << endl;
-    cout << "1. Ascending" << endl;
-    cout << "2. Descending" << endl;
-    int order;
-    cin >> order;
-    switch (choice)
-    {
-    case 1:
-        SelectionSort(a, n, order == 1 ? ascending : descending);
-        break;
-    case 2:
-        BubbleSort(a, n, order == 1 ? ascending : descending);
-        break;
-    case 3:
-        InsertionSort(a, n, order == 1 ? ascending : descending);
-        break;
-    case 4:
-        QuickSort(a, 0, n - 1, order == 1 ? ascending : descending);
-        break;
-    case 5:
-        MergeSort(a, 0, n - 1, order == 1 ? ascending : descending);
-        break;
-    case 6:
-        HeapSort(a, n, order == 1 ? ascending : descending);
-        break;
-    case 7:
-        ShellSort(a, n, order == 1 ? ascending : descending);
-        break;
-    default:
-        cout << "Invalid choice" << endl;
-        break;
-    }
-    cout << "The sorted array is: ";
-    PrintArr(a, n);
-    cout << endl;
-    cout << "Choose the search method: " << endl;
-    cout << "1. Sequential Search" << endl;
-    cout << "2. Binary Search" << endl;
-    int searchChoice;
-    cin >> searchChoice;
-    switch (searchChoice)
-    {
-    case 1:
-        cout << "The key is at index: " << SequentialSearch(a, n, key) << endl;
-        break;
-    case 2:
-        cout << "The key is at index: " << BinarySearch(a, 0, n - 1, key, order == 1 ? ascending : descending) << endl;
-        break;
-    default:
-        cout << "Invalid choice" << endl;
-        break;
-    }
-    delete[] a;
-    return 0;
 }
