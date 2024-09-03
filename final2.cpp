@@ -133,125 +133,13 @@ public:
 };
 
 // Function to convert decimal to hexadecimal using stack (LIFO)
-
-// positive & lookup table idea
-string decToHex1(long long decimal)
-{
-    Stack stack(10);
-    string hexDigits = "0123456789ABCDEF";
-    string result;
-
-    while (decimal > 0)
-    {
-        int rem = decimal % 16; // 0 - 15
-        stack.Push(rem);
-        decimal /= 16;
-    }
-
-    cout << "Stack: ";
-    stack.show();
-    while (!stack.isEmpty())
-    {
-        result += hexDigits[stack.Pop()];
-    }
-
-    return result;
-}
-// positive & ASCII value '0' = 48, 'A' = 65
-string decToHex2(long long decimal)
-{
-    Stack stack(10);
-    string hex = "";
-    while (decimal > 0)
-    {
-        int rem = decimal % 16;
-        if (rem < 10)
-        {
-            stack.Push(rem + 48);
-        }
-        else
-        {
-            stack.Push(rem + 55);
-        }
-        decimal /= 16;
-    }
-    cout << "Stack: ";
-    stack.show();
-    while (!stack.isEmpty())
-    {
-        hex += stack.Pop();
-    }
-    return hex;
-}
-//positive and negative
-string Hex(long long num)
-{
-
-    // check if num is 0 and return 0
-    if (!num)
-    {
-        return "0";
-    }
-
-    // map for dec --> hex 0-9 & 10-15(A-F)
-    map<int, char> m;
-    char digit = '0';
-    char c = 'A';
-    for (int i = 0; i < 16; i++)
-    {
-        if (i < 10)
-        {
-            m[i] = digit++;
-        }
-        else
-        {
-            m[i] = c++;
-        }
-    }
-    string res = "";
-    Stack s(10);
-
-    // convert decimal to hex
-    if (num > 0)
-    {
-        while (num > 0)
-        {
-            s.Push(num % 16);
-            num /= 16;
-        }
-    }
-    // if num < 0
-    else
-    {
-        // Store num in a u_int, most significant bit is 1
-        unsigned long long n = num;
-        while (n)
-        {
-            s.Push(n % 16);
-            n /= 16;
-        }
-    }
-    cout << "Stack: ";
-    s.show();
-    // pop from stack and add to res
-    while (!s.isEmpty())
-    {
-        res += m[s.Pop()];
-    }
-    return res;
-}
-//positive and negative using unordered_map (lookup table)
+//positive and negative using lookup table
 string Hex2(long long num) {
 
     if (num == 0) {
         return "0";
     }
-    unordered_map<int, char> hexLookupTable {
-        {0, '0'}, {1, '1'}, {2, '2'}, {3, '3'},
-        {4, '4'}, {5, '5'}, {6, '6'}, {7, '7'},
-        {8, '8'}, {9, '9'}, {10, 'A'}, {11, 'B'},
-        {12, 'C'}, {13, 'D'}, {14, 'E'}, {15, 'F'}
-    };
+   char lookUpTable[] = "0123456789ABCDEF";
     string res = "";
     Stack s(10);
     if (num > 0) {
@@ -261,7 +149,7 @@ string Hex2(long long num) {
         }
     }
     else {
-        unsigned long long n = static_cast<unsigned long long>(num);
+        unsigned long long n = static_cast<unsigned long long>(num); 
         while (n) {
             s.Push(n % 16);
             n /= 16;
@@ -270,7 +158,7 @@ string Hex2(long long num) {
     cout << "Stack: ";
     s.show();
     while (!s.isEmpty()) {
-        res += hexLookupTable[s.Pop()];
+        res += lookUpTable[s.Pop()];
     }
     return res;
 }
@@ -404,14 +292,7 @@ void inputLongLong (const char* question, long long *num)
 int main()
 {   
     long long num;
-    inputLongLong("Enter a decimal number: ", &num);
-    // cout << "Decimal: " << num << endl;
-    // cout << "Hexadecimal: " << decToHex1(num) << endl;
-    // cout << "Hexadecimal: " << decToHex2(num) << endl;
-    // cout << "Hexadecimal: " << Hex(num) << endl;
-    // cout << "Hexadecimal: " << Hex2(num) << endl;
-    string binary = Binary(num);
-    cout << "Binary: " << binary << endl;
-    cout << "Two's Complement: " << TwoComplement(num) << endl;
+    inputLongLong("Enter a number in decimal: ", &num);
+    cout << "Hexadecimal: " << Hex2(num) << endl;
     return 0;
 }
